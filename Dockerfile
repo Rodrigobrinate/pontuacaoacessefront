@@ -25,8 +25,8 @@ COPY . .
 # Variáveis de ambiente para build (podem ser sobrescritas)
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build da aplicação
-RUN npm run build
+# Build da aplicação low  priorit process
+RUN nice -n 19 npm run build
 
 # ============================================
 # Stage 3: Imagem de produção

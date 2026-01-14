@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getDashboardFilters, getDashboardData, User, ServiceType, Service } from '@/lib/api';
@@ -34,7 +34,20 @@ const chartColors = [
   '#0984e3', '#b2bec3', '#fdcb6e', '#81ecec', '#fab1a0'
 ];
 
-export default function TechniciansPage() {
+// Loading fallback component
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] to-[#16213e] flex items-center justify-center">
+      <div className="text-white flex items-center gap-4">
+        <div className="w-10 h-10 border-4 border-[#667eea]/20 border-t-[#667eea] rounded-full animate-spin"></div>
+        Carregando...
+      </div>
+    </div>
+  );
+}
+
+// Main content component that uses useSearchParams
+function TechniciansContent() {
   const searchParams = useSearchParams();
   const [users, setUsers] = useState<User[]>([]);
   const [types, setTypes] = useState<ServiceType[]>([]);
@@ -304,5 +317,14 @@ export default function TechniciansPage() {
         )}
       </main>
     </div>
+  );
+}
+
+// Default export with Suspense wrapper
+export default function TechniciansPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <TechniciansContent />
+    </Suspense>
   );
 }
