@@ -10,7 +10,9 @@ WORKDIR /app
 
 # Copiar arquivos de dependências
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
+
+# Instalar TODAS as dependências (incluindo devDependencies como TypeScript)
+RUN npm ci
 
 # ============================================
 # Stage 2: Build da aplicação
@@ -25,8 +27,8 @@ COPY . .
 # Variáveis de ambiente para build (podem ser sobrescritas)
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build da aplicação low  priorit process
-RUN nice -n 19 npm run build
+# Build da aplicação
+RUN npm run build
 
 # ============================================
 # Stage 3: Imagem de produção
