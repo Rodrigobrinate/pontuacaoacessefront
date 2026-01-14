@@ -1,0 +1,24 @@
+# Dependências
+node_modules
+npm-debug.log*
+
+# Build e cache
+.next
+out
+build
+
+# Ambiente local
+.env*.local
+.env
+
+# IDE
+.vscode
+.idea
+
+# Git
+.git
+.gitignore
+
+# Outros
+README.md
+*.md
