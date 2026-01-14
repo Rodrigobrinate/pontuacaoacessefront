@@ -1,4 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
+//const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
+const API_URL = 'https://pontuacao.h42on5.easypanel.host/';
+
 
 export interface User {
   id: string;
