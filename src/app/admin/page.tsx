@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getAdminData, runCleanup, revertImport, AdminData } from '@/lib/api';
+import AdminAuthGuard from '@/components/AdminAuthGuard';
 
-export default function AdminPage() {
+function AdminPageContent() {
   const [data, setData] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -200,5 +201,13 @@ export default function AdminPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminPage() {
+  return (
+    <AdminAuthGuard>
+      <AdminPageContent />
+    </AdminAuthGuard>
   );
 }

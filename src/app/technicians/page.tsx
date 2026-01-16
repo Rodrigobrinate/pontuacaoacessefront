@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getDashboardFilters, getDashboardData, User, ServiceType, Service } from '@/lib/api';
+import AdminAuthGuard from '@/components/AdminAuthGuard';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -323,8 +324,10 @@ function TechniciansContent() {
 // Default export with Suspense wrapper
 export default function TechniciansPage() {
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <TechniciansContent />
-    </Suspense>
+    <AdminAuthGuard>
+      <Suspense fallback={<LoadingFallback />}>
+        <TechniciansContent />
+      </Suspense>
+    </AdminAuthGuard>
   );
 }

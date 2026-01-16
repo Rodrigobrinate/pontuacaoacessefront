@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import AdminAuthGuard from '@/components/AdminAuthGuard';
 import { getDashboardFilters, getDashboardData, User, ServiceType, Service } from '@/lib/api';
 import {
   Chart as ChartJS,
@@ -35,7 +36,7 @@ const chartColors = [
   '#3498db', '#9b59b6', '#1abc9c', '#e67e22', '#34495e'
 ];
 
-export default function DashboardPage() {
+function DashboardPageContent() {
   const [users, setUsers] = useState<User[]>([]);
   const [types, setTypes] = useState<ServiceType[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -432,5 +433,13 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <AdminAuthGuard>
+      <DashboardPageContent />
+    </AdminAuthGuard>
   );
 }

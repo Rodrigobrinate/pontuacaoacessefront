@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { getImportUrl, getImportHistory, revertImport, ImportHistory } from '@/lib/api';
+import AdminAuthGuard from '@/components/AdminAuthGuard';
 
 interface LogEntry {
   type: string;
@@ -14,7 +15,7 @@ interface LogEntry {
   dataInvalida?: number;
 }
 
-export default function ImportPage() {
+function ImportPageContent() {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isDone, setIsDone] = useState(false);
@@ -328,5 +329,13 @@ export default function ImportPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ImportPage() {
+  return (
+    <AdminAuthGuard>
+      <ImportPageContent />
+    </AdminAuthGuard>
   );
 }

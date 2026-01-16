@@ -1,5 +1,5 @@
-//const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
-const API_URL = 'https://pontuacao.h42on5.easypanel.host/';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
+//const API_URL = 'https://pontuacao.h42on5.easypanel.host/';
 
 
 export interface User {
@@ -154,3 +154,183 @@ export async function updatePaymentConfig(config: Partial<Omit<PaymentConfig, 'i
   return res.json();
 }
 
+// Technician Management API
+export interface Technician {
+  id: string;
+  name: string;
+  createdAt: string;
+  hasCredentials: boolean;
+  username: string | null;
+  lastLogin: string | null;
+}
+
+export interface Credentials {
+  username: string;
+  password: string;
+  message: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  user: {
+    id: string;
+    name: string;
+    username: string;
+  };
+}
+
+export interface PerformanceData {
+  cycleStart: string;
+  cycleEnd: string;
+  totalServices: number;
+  totalPoints: number;
+  payment: number;
+  byServiceType: Record<string, { count: number; points: number; total: number }>;
+  services: { id: number; type: string; points: number; performedAt: string }[];
+  config: {
+    minPoints: number;
+    basePayment: number;
+    pointRate: number;
+  };
+}
+
+export async function getTechnicians(): Promise<Technician[]> {
+  const res = await fetch(`${API_URL}/api/technicians`);
+  if (!res.ok) throw new Error('Erro ao carregar técnicos');
+  return res.json();
+}
+
+export async function generateCredentials(userId: string): Promise<Credentials> {
+  const res = await fetch(`${API_URL}/api/technicians/${userId}/generate-credentials`, {
+    method: 'POST'
+  });
+  if (!res.ok) throw new Error('Erro ao gerar credenciais');
+  return res.json();
+}
+
+export async function login(username: string, password: string): Promise<LoginResponse> {
+  const res = await fetch(`${API_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Erro ao fazer login');
+  }
+  return res.json();
+}
+
+export async function getTechnicianPerformance(token: string): Promise<PerformanceData> {
+  const res = await fetch(`${API_URL}/api/technician/performance`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Erro ao carregar desempenho');
+  }
+  return res.json();
+}
+
+export async function getTechnicianMe(token: string): Promise<{ id: string; name: string; username: string }> {
+  const res = await fetch(`${API_URL}/api/technician/me`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('Erro ao carregar dados do técnico');
+  return res.json();
+}
+
+// Admin Authentication API
+export async function adminLogin(username: string, password: string): Promise<LoginResponse> {
+  const res = await fetch(`${API_URL}/api/admin/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Erro ao fazer login');
+  }
+  return res.json();
+}
+
+export async function getAdminMe(token: string): Promise<{ id: string; name: string; username: string }> {
+  const res = await fetch(`${API_URL}/api/admin/me`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('Erro ao carregar dados do admin');
+  return res.json();
+}
+
+export async function verifyAdminToken(token: string): Promise<{ valid: boolean; user: { id: string; name: string } }> {
+  const res = await fetch(`${API_URL}/api/admin/verify`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) return { valid: false, user: { id: '', name: '' } };
+  return res.json();
+}
+
+// Technician Report API
+export interface ServiceTypeReport {
+  name: string;
+  count: number;
+  pointsEach: number;
+  totalPoints: number;
+}
+
+export interface TechnicianReport {
+  technician: { id: string; name: string };
+  startDate: string | null;
+  endDate: string | null;
+  totalPoints: number;
+  totalServices: number;
+  byServiceType: ServiceTypeReport[];
+}
+
+export async function getTechnicianReport(userId: string, startDate?: string, endDate?: string): Promise<TechnicianReport> {
+  const params = new URLSearchParams();
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+  
+  const res = await fetch(`${API_URL}/api/technician-report/${userId}?${params}`);
+  if (!res.ok) throw new Error('Erro ao carregar relatório do técnico');
+  return res.json();
+}
+
+// Annual Summary API
+export interface MonthSummary {
+  month: number;
+  monthName: string;
+  period: string;
+  cycleStart: string;
+  cycleEnd: string;
+  totalServices: number;
+  totalPoints: number;
+  qualifiedTechnicians: number;
+  totalTechnicians: number;
+  totalPayment: number;
+}
+
+export interface AnnualSummary {
+  year: number;
+  config: {
+    minPoints: number;
+    basePayment: number;
+    pointRate: number;
+    cycleStartDay: number;
+    cycleEndDay: number;
+  };
+  months: MonthSummary[];
+  totals: {
+    totalPayment: number;
+    totalServices: number;
+    totalPoints: number;
+    qualifiedTechnicians: number;
+  };
+}
+
+export async function getAnnualSummary(year: number): Promise<AnnualSummary> {
+  const res = await fetch(`${API_URL}/api/annual-summary?year=${year}`);
+  if (!res.ok) throw new Error('Erro ao carregar resumo anual');
+  return res.json();
+}

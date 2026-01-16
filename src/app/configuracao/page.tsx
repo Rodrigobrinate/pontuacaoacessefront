@@ -3,8 +3,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { getServiceTypes, updateServiceTypePoints, ServiceType, getPaymentConfig, updatePaymentConfig, PaymentConfig } from '@/lib/api';
+import AdminAuthGuard from '@/components/AdminAuthGuard';
 
-export default function ConfiguracaoPage() {
+function ConfiguracaoPageContent() {
   const [types, setTypes] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<number | null>(null);
@@ -478,5 +479,13 @@ export default function ConfiguracaoPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function ConfiguracaoPage() {
+  return (
+    <AdminAuthGuard>
+      <ConfiguracaoPageContent />
+    </AdminAuthGuard>
   );
 }
