@@ -246,6 +246,16 @@ function DashboardPageContent() {
               ⚙️ Configuração
             </button>
           </Link>
+          <Link href="/import">
+            <button className="px-5 py-2.5 bg-white/10 text-white rounded-lg border border-white/20 font-medium hover:bg-white/20 transition-all">
+              📥 Importar
+            </button>
+          </Link>
+          <Link href="/usuarios-admin">
+            <button className="px-5 py-2.5 bg-white/10 text-white rounded-lg border border-white/20 font-medium hover:bg-white/20 transition-all">
+              👥 Admins
+            </button>
+          </Link>
           <Link href="/admin">
             <button className="px-5 py-2.5 bg-white/10 text-white rounded-lg border border-white/20 font-medium hover:bg-white/20 transition-all">
               ← Voltar

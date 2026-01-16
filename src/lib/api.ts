@@ -1,5 +1,5 @@
-////const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
-const API_URL = 'https://pontuacao.h42on5.easypanel.host/';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
+//const API_URL = 'https://pontuacao.h42on5.easypanel.host/';
 //const API_URL = 'http://51.222.140.204:8086';
 
 export interface User {
@@ -365,3 +365,65 @@ export async function getTechniciansAnnualPayments(year: number): Promise<Techni
   if (!res.ok) throw new Error('Erro ao carregar pagamentos anuais por técnico');
   return res.json();
 }
+
+// Admin User Management API
+export interface AdminUserType {
+  id: string;
+  username: string;
+  name: string;
+  createdAt: string;
+  lastLogin: string | null;
+}
+
+export async function getAdminUsers(token: string): Promise<AdminUserType[]> {
+  const res = await fetch(`${API_URL}/api/admin/users`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('Erro ao carregar administradores');
+  return res.json();
+}
+
+export async function createAdminUser(token: string, data: { username: string; password: string; name: string }): Promise<AdminUserType> {
+  const res = await fetch(`${API_URL}/api/admin/users`, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` 
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Erro ao criar administrador');
+  }
+  return res.json();
+}
+
+export async function deleteAdminUser(token: string, id: string): Promise<{ message: string }> {
+  const res = await fetch(`${API_URL}/api/admin/users/${id}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Erro ao deletar administrador');
+  }
+  return res.json();
+}
+
+export async function resetAdminPassword(token: string, id: string, password: string): Promise<{ message: string }> {
+  const res = await fetch(`${API_URL}/api/admin/users/${id}/password`, {
+    method: 'PUT',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` 
+    },
+    body: JSON.stringify({ password })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Erro ao resetar senha');
+  }
+  return res.json();
+}
+

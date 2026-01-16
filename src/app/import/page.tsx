@@ -209,11 +209,10 @@ function ImportPageContent() {
           </form>
 
           <div className="mt-6 flex gap-4 justify-center">
-            <Link href="/admin" className="text-gray-400 hover:text-white no-underline transition-colors">
-              ← Voltar ao Admin
-            </Link>
-            <Link href="/dashboard" className="text-gray-400 hover:text-white no-underline transition-colors">
-              📊 Dashboard
+            <Link href="/dashboard">
+              <button className="px-5 py-2.5 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg font-medium hover:translate-y-[-2px] hover:shadow-lg hover:shadow-[#667eea]/40 transition-all">
+                ← Voltar ao Dashboard
+              </button>
             </Link>
           </div>
         </div>
