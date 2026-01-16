@@ -11,7 +11,6 @@ interface LogEntry {
   processed?: number;
   success?: number;
   total?: number;
-  duplicados?: number;
   dataInvalida?: number;
 }
 
@@ -22,7 +21,6 @@ function ImportPageContent() {
   const [progress, setProgress] = useState(0);
   const [countRead, setCountRead] = useState(0);
   const [countSuccess, setCountSuccess] = useState(0);
-  const [countDuplicados, setCountDuplicados] = useState(0);
   const [countDataInvalida, setCountDataInvalida] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
   const [statusText, setStatusText] = useState('Processando...');
@@ -84,7 +82,6 @@ function ImportPageContent() {
     setProgress(0);
     setCountRead(0);
     setCountSuccess(0);
-    setCountDuplicados(0);
     setCountDataInvalida(0);
     setLogs([]);
     setStatusText('Processando...');
@@ -120,7 +117,6 @@ function ImportPageContent() {
             if (data.type === 'progress') {
               setCountRead(data.processed || 0);
               setCountSuccess(data.success || 0);
-              setCountDuplicados(data.duplicados || 0);
               setCountDataInvalida(data.dataInvalida || 0);
               const percent = Math.min(((data.processed || 0) / 200) * 100, 95);
               setProgress(percent);
@@ -130,7 +126,6 @@ function ImportPageContent() {
               setStatusText('Importação Finalizada!');
               setCountRead(data.total || 0);
               setCountSuccess(data.success || 0);
-              setCountDuplicados(data.duplicados || 0);
               setCountDataInvalida(data.dataInvalida || 0);
               setProgress(100);
               setIsDone(true);
@@ -295,9 +290,6 @@ function ImportPageContent() {
           <div className="text-sm mt-4 opacity-90 flex flex-wrap justify-center gap-4">
             <span className="bg-white/10 px-3 py-1 rounded-full">📄 Linhas: <strong>{countRead}</strong></span>
             <span className="bg-green-500/20 px-3 py-1 rounded-full text-green-400">✅ Sucesso: <strong>{countSuccess}</strong></span>
-            {countDuplicados > 0 && (
-              <span className="bg-yellow-500/20 px-3 py-1 rounded-full text-yellow-400">⚠️ Duplicados: <strong>{countDuplicados}</strong></span>
-            )}
             {countDataInvalida > 0 && (
               <span className="bg-red-500/20 px-3 py-1 rounded-full text-red-400">❌ Data inválida: <strong>{countDataInvalida}</strong></span>
             )}

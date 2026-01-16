@@ -1,6 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
+////const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3006';
 //const API_URL = 'https://pontuacao.h42on5.easypanel.host/';
-
+const API_URL = 'http://51.222.140.204:8086';
 
 export interface User {
   id: string;
@@ -332,5 +332,36 @@ export interface AnnualSummary {
 export async function getAnnualSummary(year: number): Promise<AnnualSummary> {
   const res = await fetch(`${API_URL}/api/annual-summary?year=${year}`);
   if (!res.ok) throw new Error('Erro ao carregar resumo anual');
+  return res.json();
+}
+
+// Technicians Annual Payments API (12 month columns)
+export interface TechnicianAnnualPayment {
+  id: string;
+  name: string;
+  monthlyPayments: number[];  // Array de 12 valores
+  monthlyPoints: number[];    // Array de 12 valores de pontos
+  yearTotal: number;
+}
+
+export interface TechniciansAnnualResponse {
+  year: number;
+  config: {
+    minPoints: number;
+    basePayment: number;
+    pointRate: number;
+    cycleStartDay: number;
+    cycleEndDay: number;
+  };
+  technicians: TechnicianAnnualPayment[];
+  monthlyTotals: number[];
+  monthlyQualified: number[];
+  monthNames: string[];
+  grandTotal: number;
+}
+
+export async function getTechniciansAnnualPayments(year: number): Promise<TechniciansAnnualResponse> {
+  const res = await fetch(`${API_URL}/api/technicians-annual-payments?year=${year}`);
+  if (!res.ok) throw new Error('Erro ao carregar pagamentos anuais por técnico');
   return res.json();
 }

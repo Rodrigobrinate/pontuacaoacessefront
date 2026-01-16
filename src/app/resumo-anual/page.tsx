@@ -46,6 +46,11 @@ function ResumoAnualPageContent() {
           📅 Resumo Anual de Pagamentos
         </h1>
         <div className="flex gap-4">
+          <Link href="/pagamentos-tecnicos">
+            <button className="px-5 py-2.5 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg font-medium hover:opacity-90 transition-all">
+              📊 Por Técnico
+            </button>
+          </Link>
           <Link href="/pagamento">
             <button className="px-5 py-2.5 bg-white/10 text-white rounded-lg border border-white/20 font-medium hover:bg-white/20 transition-all">
               💸 Pagamentos
