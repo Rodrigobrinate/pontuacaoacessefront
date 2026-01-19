@@ -2,14 +2,38 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { getTechniciansAnnualPayments, TechniciansAnnualResponse } from '@/lib/api';
+import { getTechniciansAnnualPayments, TechniciansAnnualResponse, TechnicianAnnualPayment } from '@/lib/api';
 import AdminAuthGuard from '@/components/AdminAuthGuard';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 function PagamentosTecnicosPageContent() {
   const [data, setData] = useState<TechniciansAnnualResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTechnician, setSelectedTechnician] = useState<TechnicianAnnualPayment | null>(null);
 
   useEffect(() => {
     loadData();
@@ -184,9 +208,10 @@ function PagamentosTecnicosPageContent() {
                   {filteredTechnicians.map((tech, index) => (
                     <tr 
                       key={tech.id} 
-                      className={`border-t border-white/5 hover:bg-white/[0.03] transition-colors ${
+                      className={`border-t border-white/5 hover:bg-white/[0.06] transition-colors cursor-pointer ${
                         tech.yearTotal > 0 ? '' : 'opacity-60'
                       }`}
+                      onClick={() => setSelectedTechnician(tech)}
                     >
                       <td className="px-4 py-3 sticky left-0 bg-[#1a1a2e]/95 backdrop-blur-sm z-10">
                         <div className="flex items-center gap-3">
@@ -197,29 +222,43 @@ function PagamentosTecnicosPageContent() {
                           }`}>
                             {index + 1}
                           </span>
-                          <span className="font-medium text-sm truncate max-w-[150px]" title={tech.name}>
-                            {tech.name}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm truncate max-w-[150px]" title={tech.name}>
+                              {tech.name}
+                            </span>
+                            <span className="text-xs text-gray-500">Clique para ver gráfico</span>
+                          </div>
                         </div>
                       </td>
                       {tech.monthlyPayments.map((payment, monthIdx) => (
                         <td key={monthIdx} className="px-2 py-3 text-center">
-                          <span 
-                            className={`text-sm font-medium ${
-                              payment > 0 ? 'text-[#2ecc71]' : 'text-gray-600'
-                            }`}
-                            title={`${tech.monthlyPoints[monthIdx]} pontos`}
-                          >
-                            {payment > 0 ? formatCurrency(payment) : 'R$ 0'}
-                          </span>
+                          <div className="flex flex-col items-center">
+                            <span 
+                              className={`text-sm font-medium ${
+                                payment > 0 ? 'text-[#2ecc71]' : 'text-gray-600'
+                              }`}
+                            >
+                              {payment > 0 ? formatCurrency(payment) : 'R$ 0'}
+                            </span>
+                            <span className={`text-xs ${
+                              tech.monthlyPoints[monthIdx] > 0 ? 'text-[#667eea]' : 'text-gray-600'
+                            }`}>
+                              {tech.monthlyPoints[monthIdx]} pts
+                            </span>
+                          </div>
                         </td>
                       ))}
                       <td className="px-4 py-3 text-right">
-                        <span className={`text-lg font-bold ${
-                          tech.yearTotal > 0 ? 'text-[#2ecc71]' : 'text-gray-500'
-                        }`}>
-                          {formatCurrency(tech.yearTotal)}
-                        </span>
+                        <div className="flex flex-col items-end">
+                          <span className={`text-lg font-bold ${
+                            tech.yearTotal > 0 ? 'text-[#2ecc71]' : 'text-gray-500'
+                          }`}>
+                            {formatCurrency(tech.yearTotal)}
+                          </span>
+                          <span className="text-xs text-[#667eea]">
+                            {tech.monthlyPoints.reduce((a, b) => a + b, 0)} pts
+                          </span>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -272,11 +311,169 @@ function PagamentosTecnicosPageContent() {
             <p className="text-gray-400 text-sm leading-relaxed">
               <span className="text-white font-medium">Colunas:</span> Cada coluna representa um mês do ano selecionado.<br />
               <span className="text-white font-medium">Valores:</span> <span className="text-[#2ecc71]">Verde</span> = pagamento efetuado | <span className="text-gray-500">Cinza (R$ 0)</span> = não atingiu {data.config.minPoints} pontos mínimos<br />
-              <span className="text-white font-medium">Dica:</span> Passe o mouse sobre os valores para ver a pontuação do técnico naquele mês.
+              <span className="text-white font-medium">Pontuação:</span> <span className="text-[#667eea]">Roxo</span> = pontos ganhos no mês<br />
+              <span className="text-white font-medium">Dica:</span> Clique em um técnico para ver o gráfico de evolução da pontuação.
             </p>
           </div>
         )}
       </main>
+
+      {/* Modal for Score Evolution Chart */}
+      {selectedTechnician && data && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedTechnician(null)}
+        >
+          <div 
+            className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-white/20 rounded-2xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
+                  📈 Evolução da Pontuação
+                </h2>
+                <p className="text-gray-400 mt-1">{selectedTechnician.name} - {selectedYear}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedTechnician(null)}
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-xl transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                <div className="text-3xl font-bold text-[#667eea]">
+                  {selectedTechnician.monthlyPoints.reduce((a, b) => a + b, 0)}
+                </div>
+                <div className="text-sm text-gray-400">Total de Pontos</div>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                <div className="text-3xl font-bold text-[#2ecc71]">
+                  {formatCurrencyFull(selectedTechnician.yearTotal)}
+                </div>
+                <div className="text-sm text-gray-400">Total Pago</div>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                <div className="text-3xl font-bold text-[#f1c40f]">
+                  {selectedTechnician.monthlyPoints.filter(p => p >= data.config.minPoints).length}
+                </div>
+                <div className="text-sm text-gray-400">Meses Qualificados</div>
+              </div>
+            </div>
+
+            {/* Line Chart */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+              <div className="h-80">
+                <Line 
+                  data={{
+                    labels: data.monthNames,
+                    datasets: [{
+                      label: 'Pontuação',
+                      data: selectedTechnician.monthlyPoints,
+                      borderColor: '#667eea',
+                      backgroundColor: 'rgba(102,126,234,0.1)',
+                      fill: true,
+                      tension: 0.4,
+                      pointRadius: 6,
+                      pointBackgroundColor: selectedTechnician.monthlyPoints.map(p => 
+                        p >= data.config.minPoints ? '#2ecc71' : '#e74c3c'
+                      ),
+                      pointBorderColor: '#fff',
+                      pointBorderWidth: 2,
+                    }]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        callbacks: {
+                          afterLabel: (ctx) => {
+                            const points = ctx.raw as number;
+                            if (points >= data.config.minPoints) {
+                              return `✅ Qualificado (mín: ${data.config.minPoints} pts)`;
+                            }
+                            return `❌ Não qualificado (mín: ${data.config.minPoints} pts)`;
+                          }
+                        }
+                      }
+                    },
+                    scales: {
+                      x: { 
+                        ticks: { color: '#888' }, 
+                        grid: { display: false } 
+                      },
+                      y: { 
+                        ticks: { color: '#888' }, 
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        beginAtZero: true,
+                        suggestedMax: Math.max(...selectedTechnician.monthlyPoints) * 1.2 || 100
+                      }
+                    }
+                  }}
+                />
+              </div>
+              <div className="flex justify-center gap-6 mt-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-[#2ecc71]"></span>
+                  <span className="text-gray-400">Qualificado (≥{data.config.minPoints} pts)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-[#e74c3c]"></span>
+                  <span className="text-gray-400">Não qualificado</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Monthly Details Table */}
+            <div className="mt-6 bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-white/5">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs uppercase tracking-wider text-gray-500">Mês</th>
+                    <th className="px-4 py-3 text-center text-xs uppercase tracking-wider text-gray-500">Pontos</th>
+                    <th className="px-4 py-3 text-center text-xs uppercase tracking-wider text-gray-500">Status</th>
+                    <th className="px-4 py-3 text-right text-xs uppercase tracking-wider text-gray-500">Pagamento</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.monthNames.map((month, idx) => (
+                    <tr key={idx} className="border-t border-white/5">
+                      <td className="px-4 py-3 font-medium">{month}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={selectedTechnician.monthlyPoints[idx] > 0 ? 'text-[#667eea]' : 'text-gray-600'}>
+                          {selectedTechnician.monthlyPoints[idx]} pts
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {selectedTechnician.monthlyPoints[idx] >= data.config.minPoints ? (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-[#2ecc71]/20 text-[#2ecc71]">
+                            ✅ Qualificado
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-[#e74c3c]/20 text-[#e74c3c]">
+                            ❌ Não qualificado
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span className={selectedTechnician.monthlyPayments[idx] > 0 ? 'text-[#2ecc71] font-bold' : 'text-gray-600'}>
+                          {formatCurrencyFull(selectedTechnician.monthlyPayments[idx])}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

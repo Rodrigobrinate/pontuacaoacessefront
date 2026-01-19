@@ -241,6 +241,11 @@ function DashboardPageContent() {
               💸 Pagamento
             </button>
           </Link>
+          <Link href="/pagamentos-tecnicos">
+            <button className="px-5 py-2.5 bg-gradient-to-r from-[#9b59b6] to-[#8e44ad] text-white rounded-lg font-medium hover:translate-y-[-2px] hover:shadow-lg hover:shadow-purple-500/40 transition-all">
+              📊 Pagamentos/Técnico
+            </button>
+          </Link>
           <Link href="/configuracao">
             <button className="px-5 py-2.5 bg-white/10 text-white rounded-lg border border-white/20 font-medium hover:bg-white/20 transition-all">
               ⚙️ Configuração
